@@ -1,7 +1,13 @@
 package com.scalacamp.crimes
 
 import java.io.File
+import java.util.Properties
 
+import com.scalacamp.crimes.config.Configuration
+
+import scala.io.Source._
+import scala.collection.JavaConverters._
+import com.scalacamp.crimes.domain.CrimeType
 import com.scalacamp.crimes.reader.IncidentCsvReader
 import com.scalacamp.crimes.stats.CrimeStatistic
 
@@ -14,12 +20,16 @@ object CrimeRankingApp extends App {
     sys.exit(1)
   }
 
+  val configuration: Configuration = readConfiguration
+
   val incidents = getListOfFiles(args(0))
     .flatMap(filePath => new IncidentCsvReader(filePath).readIncidents())
       .filter(!_.crimeId.isEmpty)
 
-  new CrimeStatistic(incidents).getTopCrimeLocationsWithIncidents(10)
-    .foreach(locWithIncidents => println(locWithIncidents.display))
+  val theftCrimeTypes = Set(CrimeType.BICYCLE_THEFT, CrimeType.THEFT_FROM_THE_PERSON, CrimeType.OTHER_THEFT)
+
+  new CrimeStatistic(incidents).getTopCrimeLocationsWithIncidents(configuration.numberOfLocations)
+    .foreach(locWithIncidents => println(locWithIncidents.display(theftCrimeTypes)))
 
   /**
     *
@@ -30,5 +40,12 @@ object CrimeRankingApp extends App {
     val file = new File(dir)
     file.listFiles.filter(_.isFile)
       .map(_.getPath).toList
+  }
+
+  def readConfiguration: Configuration = {
+    val prop = new Properties()
+    val reader = fromURL(getClass.getResource("/application.properties")).bufferedReader()
+    prop.load(reader)
+    Configuration.fromMap(prop.asScala.toMap)
   }
 }

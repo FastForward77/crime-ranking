@@ -1,10 +1,16 @@
 package com.scalacamp.crimes.stats
 
-import com.scalacamp.crimes.domain.{Coordinates, Incident}
+import com.scalacamp.crimes.domain.CrimeType.CrimeType
+import com.scalacamp.crimes.domain.{Coordinates, CrimeType, Incident}
 
 case class IncidentsByLocation(coordinates: Coordinates, incidents: Seq[Incident]) {
-  def display = s"${coordinates}:${incidents.size}\nThefts:\n" +
-    incidents.map(incident => incident.crimeId).mkString("\n")
+  def display: String = display(CrimeType.values)
+
+
+  def display(allowedCrimeTypes: Set[CrimeType]) = s"${coordinates}:${incidents.size}\nThefts:\n" +
+    incidents
+      .filter(i => allowedCrimeTypes.contains(i.crimeType))
+      .map(incident => incident.crimeId).mkString("\n")
 }
 
 /**

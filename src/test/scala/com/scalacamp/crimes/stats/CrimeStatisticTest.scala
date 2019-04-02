@@ -23,7 +23,9 @@ class CrimeStatisticTest extends FunSuite {
 
     val incidentsByLocation = new CrimeStatistic(incidents).getTopCrimeLocationsWithIncidents(2)
     incidentsByLocation.size shouldBe 2
+    incidentsByLocation(0).coordinates shouldBe location1
     incidentsByLocation(0).incidents.size shouldBe 3
+    incidentsByLocation(1).coordinates shouldBe location2
     incidentsByLocation(1).incidents.size shouldBe 2
   }
 
